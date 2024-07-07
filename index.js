@@ -58,11 +58,43 @@ let startCoords, endCoords;
 let startMarker, endMarker;
 let circle;
 let mapGraph;
+let circleRadius = RADIUS;
+let loading = false;
+let animationSpeed = ANIMATION_SPEED;
+
+const reset = () => {
+  if (startMarker) {
+    map.removeLayer(startMarker);
+    startMarker = null;
+  }
+  if (endMarker) {
+    map.removeLayer(endMarker);
+    endMarker = null;
+  }
+  if (circle) {
+    map.removeLayer(circle);
+    circle = null;
+  }
+
+  map.eachLayer(function (layer) {
+    if (layer instanceof L.Polyline) {
+      map.removeLayer(layer);
+    }
+  });
+
+  const highestTimeoutId = setTimeout(() => {});
+
+  for (let i = 0; i <= highestTimeoutId; i++) {
+    clearTimeout(i);
+  }
+};
 
 map.on("click", async (e) => {
   let coords = e.latlng;
 
-  mapGraph = await getMapGraph(coords);
+  setLoading();
+  mapGraph = await getMapGraph(coords, circleRadius);
+  setLoading();
   if (!mapGraph.startNode) {
     toast("No routes available nearby! Please choose another location!");
   } else {
@@ -71,23 +103,7 @@ map.on("click", async (e) => {
     console.log(coords);
     console.log(startCoords);
 
-    if (startMarker) {
-      map.removeLayer(startMarker);
-      startMarker = null;
-    }
-    if (endMarker) {
-      map.removeLayer(endMarker);
-      endMarker = null;
-    }
-    if (circle) {
-      map.removeLayer(circle);
-      circle = null;
-    }
-    map.eachLayer(function (layer) {
-      if (layer instanceof L.Polyline) {
-        map.removeLayer(layer);
-      }
-    });
+    reset();
 
     startMarker = L.marker(startCoords, {
       icon: L.divIcon({
@@ -99,7 +115,7 @@ map.on("click", async (e) => {
     }).addTo(map);
 
     circle = L.circle(startCoords, {
-      radius: RADIUS,
+      radius: circleRadius,
       color: "#ff5f1f31",
       fillOpacity: 0.2,
     }).addTo(map);
@@ -112,37 +128,41 @@ map.on("contextmenu", async function (e) {
     endMarker = null;
   }
 
-  if (!startMarker) {
-    toast("Please choose a starting point first!");
-  } else {
-    map.eachLayer(function (layer) {
-      if (layer instanceof L.Polyline) {
-        map.removeLayer(layer);
-      }
-    });
-
-    let coords = e.latlng;
-    let nearestNode = await getNearestNode(mapGraph, coords);
-    endCoords = [nearestNode.latitude, nearestNode.longitude];
-
-    var origin = startMarker.getLatLng();
-    var dest = [nearestNode.latitude, nearestNode.longitude];
-    var distance = origin.distanceTo(dest);
-
-    if (distance > RADIUS) {
-      toast(
-        "Please place the final point within the radius of the initial point!"
-      );
+  if (loading === false) {
+    if (!startMarker) {
+      toast("Please choose a starting point first!");
     } else {
-      endMarker = L.marker(endCoords, {
-        icon: L.divIcon({
-          className: "custom-dest-icon",
-          html: '<div class="custom-marker dest-marker"></div>',
-          iconSize: [MARKER_SIZE, MARKER_SIZE],
-          iconAnchor: [MARKER_SIZE / 2, MARKER_SIZE / 2],
-        }),
-      }).addTo(map);
+      map.eachLayer(function (layer) {
+        if (layer instanceof L.Polyline) {
+          map.removeLayer(layer);
+        }
+      });
+
+      let coords = e.latlng;
+      let nearestNode = await getNearestNode(mapGraph, coords);
+      endCoords = [nearestNode.latitude, nearestNode.longitude];
+
+      var origin = startMarker.getLatLng();
+      var dest = [nearestNode.latitude, nearestNode.longitude];
+      var distance = origin.distanceTo(dest);
+
+      if (distance > circleRadius) {
+        toast(
+          "Please place the final point within the radius of the initial point!"
+        );
+      } else {
+        endMarker = L.marker(endCoords, {
+          icon: L.divIcon({
+            className: "custom-dest-icon",
+            html: '<div class="custom-marker dest-marker"></div>',
+            iconSize: [MARKER_SIZE, MARKER_SIZE],
+            iconAnchor: [MARKER_SIZE / 2, MARKER_SIZE / 2],
+          }),
+        }).addTo(map);
+      }
     }
+  } else {
+    toast("Please wait for the data to load!");
   }
 });
 
@@ -263,17 +283,31 @@ function solveWithAStarAlgorithm() {
   });
 
   if (fl) {
-    let time = ANIMATION_SPEED * 20;
+    let time = animationSpeed * 20;
 
     for (let i = 0; i < dryRun.length; i++) {
-      time = time + ANIMATION_SPEED * 20;
+      time = time + animationSpeed * 20;
       setTimeout(() => {
-        drawPolylineSmoothly(map, dryRun[i], "rgba(255,0,0,0.4)", 1);
+        drawPolylineSmoothly(map, dryRun[i], "rgba(255,0,0,0.4)", 1, "glow");
       }, time);
     }
 
     setTimeout(() => {
-      drawPolylineSmoothly(map, path.reverse(), "#FF5F1F", 4, 50);
+      // var corners = map.getBounds();
+
+      // // Create a rectangle overlay using the corners
+      // var bounds = L.rectangle(corners, {
+      //   fillOpacity: 0.5,
+      //   stroke: false,
+      //   className: "overlay",
+      // }).addTo(map);
+
+      drawPolylineSmoothly(map, path.reverse(), "#DCDAD7", 4, "glow2", 50);
+      // let polyline = L.polyline(path.reverse(), {
+      //   color: "#DCDAD7",
+      //   weight: 4,
+      //   className: "glow2",
+      // }).addTo(map);
     }, time);
   }
 }
@@ -283,14 +317,15 @@ function drawPolylineSmoothly(
   path,
   color = "blue",
   weight = 1,
-  interval = ANIMATION_SPEED * 20
+  className,
+  interval = animationSpeed * 20
 ) {
   let points = path;
 
   let polyline = L.polyline([], {
     color: color,
     weight: weight,
-    className: "glow",
+    className: className,
   }).addTo(map);
 
   let index = 0;
@@ -302,4 +337,26 @@ function drawPolylineSmoothly(
       clearInterval(intervalId);
     }
   }, interval);
+}
+
+// Add event listeners for buttons in HTML
+document.getElementById("settingsButton").addEventListener("click", () => {
+  document.getElementById("sidebar").classList.toggle("visible");
+});
+
+document.getElementById("radiusSlider").addEventListener("input", (event) => {
+  document.getElementById("radiusValue").innerText = event.target.value;
+  reset();
+  circleRadius = event.target.value * 1000;
+});
+
+document.getElementById("speedSlider").addEventListener("input", (event) => {
+  document.getElementById("speedValue").innerText = event.target.value;
+  reset();
+  animationSpeed = (10 - event.target.value) * 0.04;
+});
+
+function setLoading() {
+  loading = !loading;
+  document.getElementById("loading").classList.toggle("visible");
 }

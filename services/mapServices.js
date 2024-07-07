@@ -1,4 +1,3 @@
-import { RADIUS } from "../config.js";
 import Graph from "../models/Graph.js";
 import fetchRoadInfo from "./fetchRoadInfo.js";
 
@@ -39,7 +38,7 @@ export async function getNearestNode(graph, coords) {
   return nearestNode;
 }
 
-export async function getMapGraph(coords) {
+export async function getMapGraph(coords, RADIUS) {
   let roadInfo = await (await fetchRoadInfo(RADIUS, coords)).json();
   let elements = roadInfo.elements;
 
