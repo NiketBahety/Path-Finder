@@ -61,6 +61,7 @@ let mapGraph;
 let circleRadius = RADIUS;
 let loading = false;
 let animationSpeed = ANIMATION_SPEED;
+let visualization = true;
 
 const reset = () => {
   if (startMarker) {
@@ -173,8 +174,7 @@ document.getElementById("generate-btn").addEventListener("click", function () {
 });
 
 function solveWithAStarAlgorithm() {
-  console.log(endCoords);
-  // console.log(mapGraph.nodes);
+  let startTime = performance.now();
   for (let [key, value] of mapGraph.nodes) {
     value.distanceToEnd = calculateDistance(
       value.latitude,
@@ -200,6 +200,7 @@ function solveWithAStarAlgorithm() {
   let fl = true;
 
   while (true) {
+    // console.log(open.length);
     if (open.length === 0) {
       fl = false;
       console.log("No path exists!");
@@ -276,6 +277,10 @@ function solveWithAStarAlgorithm() {
     prevNode = current;
   }
 
+  let endTtime = performance.now();
+
+  console.log(`Time taken: ${((endTtime - startTime) / 1000).toFixed(3)}s`);
+
   map.eachLayer(function (layer) {
     if (layer instanceof L.Polyline) {
       map.removeLayer(layer);
@@ -285,29 +290,24 @@ function solveWithAStarAlgorithm() {
   if (fl) {
     let time = animationSpeed * 20;
 
-    for (let i = 0; i < dryRun.length; i++) {
-      time = time + animationSpeed * 20;
-      setTimeout(() => {
-        drawPolylineSmoothly(map, dryRun[i], "rgba(255,0,0,0.4)", 1, "glow");
-      }, time);
+    if (visualization) {
+      for (let i = 0; i < dryRun.length; i++) {
+        time = time + animationSpeed * 20;
+        setTimeout(() => {
+          drawPolylineSmoothly(map, dryRun[i], "rgba(255,0,0,0.4)", 1, "glow");
+        }, time);
+      }
     }
 
     setTimeout(() => {
-      // var corners = map.getBounds();
-
-      // // Create a rectangle overlay using the corners
-      // var bounds = L.rectangle(corners, {
-      //   fillOpacity: 0.5,
-      //   stroke: false,
-      //   className: "overlay",
-      // }).addTo(map);
-
-      drawPolylineSmoothly(map, path.reverse(), "#DCDAD7", 4, "glow2", 50);
-      // let polyline = L.polyline(path.reverse(), {
-      //   color: "#DCDAD7",
-      //   weight: 4,
-      //   className: "glow2",
-      // }).addTo(map);
+      drawPolylineSmoothly(
+        map,
+        path.reverse(),
+        "#DCDAD7",
+        4,
+        "glow2",
+        3000 / path.length
+      );
     }, time);
   }
 }
@@ -365,7 +365,23 @@ document.getElementById("infoButton").addEventListener("click", () => {
 document.getElementById("radiusSlider").addEventListener("input", (event) => {
   document.getElementById("radiusValue").innerText = event.target.value;
   reset();
+  if (visualization && event.target.value > 10) {
+    let toggleButton = document.getElementById("visualization-toggle");
+    toggleButton.classList.toggle("active");
+
+    let visualizationEnabled = toggleButton.classList.contains("active");
+
+    if (visualizationEnabled) {
+      visualization = true;
+    } else {
+      visualization = false;
+    }
+    toast(
+      "Algorithm exploitation visualization has been turned off to avoid high CPU usage, if you wish to see animation turn it back on!"
+    );
+  }
   circleRadius = event.target.value * 1000;
+  console.log(circleRadius);
 });
 
 document.getElementById("speedSlider").addEventListener("input", (event) => {
@@ -378,3 +394,22 @@ function setLoading() {
   loading = !loading;
   document.getElementById("loading").classList.toggle("visible");
 }
+
+document
+  .getElementById("visualization-toggle")
+  .addEventListener("click", () => {
+    reset();
+    let toggleButton = document.getElementById("visualization-toggle");
+    toggleButton.classList.toggle("active");
+
+    let visualizationEnabled = toggleButton.classList.contains("active");
+
+    if (visualizationEnabled) {
+      visualization = true;
+    } else {
+      visualization = false;
+    }
+  });
+
+// Possible optimizations
+// 1. Based on distance if distance is very high choose only large highways to consider as possible paths

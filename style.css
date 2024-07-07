@@ -379,3 +379,55 @@ path.glow2 {
     transform: rotate(360deg);
   }
 }
+
+.toggle-btn {
+  width: 50px;
+  height: 25px;
+  border-radius: 25px;
+  background-color: #ccc;
+  position: relative;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+/* Style for the toggle button's knob */
+.toggle-btn::before {
+  content: "";
+  position: absolute;
+  width: 21px;
+  height: 21px;
+  border-radius: 50%;
+  background-color: #fff;
+  top: 2px;
+  left: 2px;
+  transition: 0.3s;
+}
+
+/* Style for the toggle button when active */
+.toggle-btn.active {
+  background-color: blue;
+}
+
+/* Style for the toggle button's knob when active */
+.toggle-btn.active::before {
+  left: 27px;
+}
+
+.toggle-div {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* #timer {
+  position: fixed;
+  top: 100px;
+  right: 10px;
+  background-color: #333;
+  color: #fff;
+  padding: 10px;
+  border-radius: 5px;
+  font-family: Arial, sans-serif;
+  z-index: 1000;
+} */

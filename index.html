@@ -37,16 +37,24 @@
       <label for="radiusSlider"
         >Radius: <span id="radiusValue">1</span> km</label
       >
-      <input type="range" id="radiusSlider" min="1" max="10" value="1" />
+      <input type="range" id="radiusSlider" min="1" max="100" value="1" />
       <label for="speedSlider"
         >Animation Speed: <span id="speedValue">5</span></label
       >
       <input type="range" id="speedSlider" min="1" max="10" value="5" />
+      <div class="toggle-div">
+        <label for="visualization-toggle"
+          >Algorithm Exploration Visualization</label
+        >
+        <div class="toggle-btn active" id="visualization-toggle"></div>
+      </div>
     </div>
 
     <div class="loading-container" id="loading">
       <div class="loading-spinner"></div>
     </div>
+
+    <!-- <div id="timer">Elapsed time: 0s</div> -->
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script
