@@ -285,11 +285,18 @@ path.glow2 {
     filter: none;
   }
 }
-
-#settingsButton {
+.top-right-btns {
   position: fixed;
   top: 30px;
   right: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 1001;
+  gap: 20px;
+}
+
+.tr-btn {
   background: #333;
   color: #fff;
   border: none;
@@ -300,11 +307,10 @@ path.glow2 {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1001;
   font-size: 20px;
 }
 
-#settingsButton:hover {
+.tr-btn:hover {
   background: #555;
 }
 

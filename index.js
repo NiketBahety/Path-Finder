@@ -344,6 +344,24 @@ document.getElementById("settingsButton").addEventListener("click", () => {
   document.getElementById("sidebar").classList.toggle("visible");
 });
 
+document.getElementById("infoButton").addEventListener("click", () => {
+  Toastify({
+    text: "Left click at any point to add starting point and right click to add destination marker!",
+    duration: 5000,
+    newWindow: true,
+    close: true,
+    gravity: "bottom", // `top` or `bottom`
+    position: "center", // `left`, `center` or `right`
+    stopOnFocus: true, // Prevents dismissing of toast on hover
+    style: {
+      background: "linear-gradient(to right, #fe53bb, #8f51ea)",
+      borderRadius: "3px",
+    },
+    className: "info",
+    onClick: function () {}, // Callback after click
+  }).showToast();
+});
+
 document.getElementById("radiusSlider").addEventListener("input", (event) => {
   document.getElementById("radiusValue").innerText = event.target.value;
   reset();
